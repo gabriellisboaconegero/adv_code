@@ -1,0 +1,8 @@
+dia_1:
+    bash: .sh
+dia_2:
+    pascal: .pas
+dia_3:
+    python: .py
+dia_4:
+    javascript: .js
