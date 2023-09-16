@@ -6,3 +6,5 @@ dia_3:
     python: .py
 dia_4:
     javascript: .js
+dia_7:
+    ruby: .rb
