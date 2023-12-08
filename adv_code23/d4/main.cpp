@@ -44,7 +44,40 @@ void part1(char *input){
     cout << "part1: " << sum << endl;
 }
 
+void part2(char *input){
+    ifstream file;
+    string line;
+    string s;
+    int num;
+
+    file.open(input);
+
+    while (getline(file, line)){
+        vector<int> winning;
+        vector<int> mynums;
+        istringstream iss(line);
+        iss >> s;
+
+        iss >> s;
+        while(!(iss >> num))
+            winning.push_back(num);
+        return;
+        while (!(iss >> num))
+            mynums.push_back(num);
+
+        for (auto i : winning)
+            cout << i << " ";
+        cout << endl;
+        for (auto i : mynums)
+            cout << i << " ";
+        cout << endl;
+    }
+    
+    file.close();
+}
+
 int main(int argc, char **argv){
     part1(argv[1]);
+    part2(argv[1]);
     return 0;
 }
