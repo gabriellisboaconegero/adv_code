@@ -48,32 +48,41 @@ void part2(char *input){
     ifstream file;
     string line;
     string s;
-    int num;
+    vector<int> cards(500, 1);
+    int num, card_id = 0;
+    size_t sum = 0;
 
     file.open(input);
 
     while (getline(file, line)){
         vector<int> winning;
         vector<int> mynums;
-        istringstream iss(line);
-        iss >> s;
+        vector<int>::iterator it;
 
-        iss >> s;
-        while(!(iss >> num))
+        s = line.substr(line.find(":")+2);
+        istringstream iss(s.substr(0, s.find("|")));
+        while(iss >> num)
             winning.push_back(num);
-        return;
-        while (!(iss >> num))
+        istringstream iss1(s.substr(s.find("|")+2));
+        while (iss1 >> num)
             mynums.push_back(num);
 
-        for (auto i : winning)
-            cout << i << " ";
-        cout << endl;
-        for (auto i : mynums)
-            cout << i << " ";
-        cout << endl;
+        vector<int> res(mynums.size() + winning.size());
+        sort(winning.begin(), winning.end());
+        sort(mynums.begin(), mynums.end());
+        it = set_intersection(winning.begin(), winning.end(), mynums.begin(), mynums.end(), res.begin());
+        res.resize(it-res.begin());
+
+        sum += cards[card_id];
+        for (size_t i = 1; i <= res.size(); i++){
+            cards[card_id+i] += cards[card_id];
+        }
+
+        card_id++;
     }
     
     file.close();
+    cout << "part2: " << sum << endl;
 }
 
 int main(int argc, char **argv){
