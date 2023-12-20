@@ -225,7 +225,7 @@ void part2_alt(char *input){
 
     size_t min_ = string::npos;
     for (size_t k = 0; k < seeds.size(); k+=2){
-        cout << seeds[k] << " - " << seeds[k] + seeds[k+1] - 1 << endl;
+        /* cout << seeds[k] << " - " << seeds[k] + seeds[k+1] - 1 << endl; */
         for (size_t n = seeds[k]; n < (seeds[k] + seeds[k+1]); n++){
             size_t num = n;
             for (size_t i = 0; i < maps.size(); i++){
@@ -237,10 +237,8 @@ void part2_alt(char *input){
                     }
                 }
             }
-            if (num < min_){
+            if (num < min_)
                 min_ = num;
-                cout <<  "min = " << min_ << endl;
-            }
         }
     }
     file.close();
@@ -250,6 +248,7 @@ void part2_alt(char *input){
 
 int main(int argc, char **argv){
     part1(argv[1]);
-    part2_alt(argv[1]);
+    part2(argv[1]);
+    /* part2_alt(argv[1]); */
     return 0;
 }
