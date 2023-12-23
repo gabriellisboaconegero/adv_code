@@ -37,8 +37,38 @@ void part1(char *input){
     cout << "Part1: " << res << endl;
 }
 
+void part2(char *input){
+    ifstream file;
+    file.open(input);
+    if (!file.is_open())
+        return;
+
+    string line;
+    u64 num;
+
+    getline(file, line);
+    istringstream iss(line.substr(line.find_first_of("0123456789")));
+    u64 b = 0;
+    while (iss >> num)
+        b = b*pow(10, floor(log10(num))+1) + num;
+
+    getline(file, line);
+    istringstream iss2(line.substr(line.find_first_of("0123456789")));
+    u64 c = 0;
+    while (iss2 >> num)
+        c = c*pow(10, floor(log10(num))+1) + num;
+
+    double delta = (b*b - 4*c);
+    i64 x1 = floor((b-sqrt(delta))/2)+1;
+    i64 x2 = ceil((b+sqrt(delta))/2);
+    u64 res = x2-x1;
+
+    cout << "Part2: " << res << endl;
+}
+
 int main(int argc, char **argv){
     part1(argv[1]);
+    part2(argv[1]);
 
     return 0;
 }
