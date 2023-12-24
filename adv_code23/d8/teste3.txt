@@ -1,0 +1,10 @@
+LR
+
+LLA = (LLB, XXX)
+LLB = (XXX, LLZ)
+LLZ = (LLB, XXX)
+PPA = (PPB, XXX)
+PPB = (PPC, PPC)
+PPC = (PPZ, PPZ)
+PPZ = (PPB, PPB)
+XXX = (XXX, XXX)
