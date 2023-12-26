@@ -18,6 +18,7 @@ struct pipe_t {
     bool edges[4];
 };
 
+
 #define START (struct pipe_t){.is_start=true, .visited=false, .edges={true, true, true, true}}
 #define GROUND (struct pipe_t){.is_start=false, .visited=false, .edges={false, false, false, false}}
 #define OL (struct pipe_t){.is_start=false, .visited=false, .edges={false, true, false, true}}
@@ -38,7 +39,16 @@ map<char, struct pipe_t> pipe_map = {
     {'J', NO}
 };
 
-bool valid_pos(size_t x, size_t y, size_t mx, size_t my){
+map<char, string> map_char = {
+    {'-', "─"},
+    {'|', "│"},
+    {'L', "└"},
+    {'J', "┘"},
+    {'7', "┐"},
+    {'F', "┌"}
+};
+
+bool valid_pos(size_t x, size_t y, size_t my, size_t mx){
     return (0 <= x && x < mx) && (0 <= y && y < my);
 }
 
@@ -111,7 +121,66 @@ void part1(char *input){
     cout << "Part1: " << res << ", " << res/2 << endl;
 }
 
+void part2(char *input){
+    ifstream file;
+    file.open(input);
+    if (!file.is_open())
+        return;
+    u64 res = 0;
+
+    string line;
+    vector<vector<struct pipe_t>> maze;
+    Pos_t pos;
+    while (getline(file, line)){
+        maze.push_back(vector<struct pipe_t>());
+        for (auto c : line){
+            struct pipe_t pi = pipe_map[c];
+            pi.c = c;
+            maze.back().push_back(pi);
+            if (c == 'S')
+                pos = make_pair(maze.size()-1, maze.back().size()-1);
+        }
+    }
+
+    Pos_t start = pos;
+    while(next_pos(pos, maze));
+    bool start_edges[4] = {false};
+    start_edges[N] = maze[start.first-1][start.second].edges[S];
+    start_edges[L] = maze[start.first][start.second+1].edges[O];
+    start_edges[S] = maze[start.first+1][start.second].edges[N];
+    start_edges[O] = maze[start.first][start.second-1].edges[L];
+
+    maze[start.first][start.second].edges[N] = start_edges[N];
+    maze[start.first][start.second].edges[L] = start_edges[L];
+    maze[start.first][start.second].edges[S] = start_edges[S];
+    maze[start.first][start.second].edges[O] = start_edges[O];
+
+    bool is_in = false;
+    for (auto v : maze){
+        for (auto cell : v){
+            if (is_in && !cell.visited){
+                res++;
+                cout << "\x1b[1;92mI\x1b[0m";
+                continue;
+            }
+            if (cell.visited && cell.edges[S])
+                is_in = !is_in;
+
+            if (cell.is_start)
+                cout << "\x1b[1;91mS\x1b[0m";
+            else if (!is_in && !cell.visited)
+                cout << "\x1b[1;94mO\x1b[0m";
+            else
+                cout << map_char[cell.c];
+        }
+        cout << endl;
+    }
+
+    cout << "Part2: " << res << endl;
+}
+
 int main(int argc, char **argv){
     part1(argv[1]);
+    part2(argv[1]);
     return 0;
 }
