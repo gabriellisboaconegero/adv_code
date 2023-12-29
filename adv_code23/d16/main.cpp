@@ -98,8 +98,76 @@ void part1(char *input){
     cout << "Part1: " << res << endl;
 }
 
+void clear_grid(vector<vector<struct cell_t>> &grid){
+    for (auto &row : grid){
+        for (auto &c : row){
+            c.is_ray[VERT] = false;
+            c.is_ray[HORI] = false;
+            c.has_light = false;
+        }
+    }
+}
+
+void part2(char *input){
+    ifstream file;
+    file.open(input);
+    if (!file.is_open())
+        return;
+
+    vector<vector<struct cell_t>> grid;
+    string line;
+    while (getline(file, line)){
+        grid.push_back(vector<struct cell_t>());
+        for (auto c : line){
+            struct cell_t cell = {0};
+            cell.ch = c;
+            grid.back().push_back(cell);
+        }
+    }
+    file.close();
+
+    int ma = 0;
+    for (size_t i = 0; i < grid.size(); i++){
+        clear_grid(grid);
+        simulate_ray(grid, complex<int>(-1, i), complex<int>(1, 0));
+        int res = 0;
+        for (auto row : grid)
+            res += count_if(row.begin(), row.end(), 
+                    [](struct cell_t c){return c.is_ray[VERT] || c.is_ray[HORI] || c.has_light;});
+        ma = max(ma, res);
+
+        clear_grid(grid);
+        simulate_ray(grid, complex<int>(grid[0].size(), i), complex<int>(-1, 0));
+        res = 0;
+        for (auto row : grid)
+            res += count_if(row.begin(), row.end(), 
+                    [](struct cell_t c){return c.is_ray[VERT] || c.is_ray[HORI] || c.has_light;});
+        ma = max(ma, res);
+    }
+    for (size_t i = 0; i < grid[0].size(); i++){
+        clear_grid(grid);
+        simulate_ray(grid, complex<int>(i, -1), complex<int>(0, 1));
+        int res = 0;
+        for (auto row : grid)
+            res += count_if(row.begin(), row.end(), 
+                    [](struct cell_t c){return c.is_ray[VERT] || c.is_ray[HORI] || c.has_light;});
+        ma = max(ma, res);
+
+        clear_grid(grid);
+        simulate_ray(grid, complex<int>(i, grid.size()), complex<int>(0, -1));
+        res = 0;
+        for (auto row : grid)
+            res += count_if(row.begin(), row.end(), 
+                    [](struct cell_t c){return c.is_ray[VERT] || c.is_ray[HORI] || c.has_light;});
+        ma = max(ma, res);
+    }
+    
+    cout << "Part2: " << ma << endl;
+}
+
 int main(int argc, char **argv){
     part1(argv[1]);
+    part2(argv[1]);
 
     return 0;
 }
