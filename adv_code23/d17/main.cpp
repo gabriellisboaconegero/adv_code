@@ -10,6 +10,9 @@ struct pos_t {
     bool operator==(const struct pos_t &p) const{
         return x == p.x && y == p.y;
     }
+    bool operator!=(const struct pos_t &p) const{
+        return !(x == p.x && y == p.y);
+    }
 };
 
 #define N 0
@@ -49,6 +52,7 @@ struct info_t {
     struct state_t parent;
     bool closed;
     i64 g;
+    i64 f;
 };
 
 struct state_map_t {
@@ -59,6 +63,11 @@ struct state_map_t {
         return t;
     }
 };
+
+
+i64 h(struct pos_t s, struct pos_t e){
+    return e.x - s.x + e.y - s.y;
+}
 
 vector<struct state_t> neighbors(struct state_t s, vector<vector<int>> &grid){
     vector<struct state_t> res;
@@ -97,7 +106,17 @@ vector<struct state_t> neighbors(struct state_t s, vector<vector<int>> &grid){
     return res;
 }
 
-vector<vector<struct info_t>> dijkstra(vector<vector<int>> grid, struct pos_t start, struct pos_t end){
+vector<struct pos_t> reconstruct_path(struct state_t c, struct pos_t start, struct state_map_t details){
+    vector<struct pos_t> res;
+    while (c.pos != start){
+        res.push_back(c.pos);
+        c = details[c].parent;
+    }
+
+    return res;
+}
+
+vector<struct pos_t> a_star(vector<vector<int>> grid, struct pos_t start, struct pos_t end){
     vector<pair<i64, struct state_t>> openSet;
     struct state_map_t details;
     for (size_t y = 0; y < grid.size(); y++){
@@ -107,7 +126,7 @@ vector<vector<struct info_t>> dijkstra(vector<vector<int>> grid, struct pos_t st
             for (size_t d = 0; d < 4; d++){
                 vector<struct info_t> c;
                 for (size_t s = 0; s < 4; s++){
-                    c.push_back({{-1, -1, 0, 0}, false, numeric_limits<i64>::max()});
+                    c.push_back({{-1, -1, 0, 0}, false, numeric_limits<i64>::max(), numeric_limits<i64>::max()});
                 }
                 b.push_back(c);
             }
@@ -129,13 +148,15 @@ vector<vector<struct info_t>> dijkstra(vector<vector<int>> grid, struct pos_t st
 
     details[q].parent = {-1, -1, L, 1};
     details[q].g = 0;
-    openSet.push_back(make_pair(details[q].g, q));
+    details[q].f = details[q].g + h(start, end);
+
+    openSet.push_back(make_pair(details[q].f, q));
 
     q.dir = S;
-
     details[q].parent = {-1, -1, S, 1};
     details[q].g = 0;
-    openSet.push_back(make_pair(details[q].g, q));
+    details[q].f = details[q].g + h(start, end);
+    openSet.push_back(make_pair(details[q].f, q));
     push_heap(openSet.begin(), openSet.end(), heap_comp);
 
     while(!openSet.empty()){
@@ -144,26 +165,35 @@ vector<vector<struct info_t>> dijkstra(vector<vector<int>> grid, struct pos_t st
         q = pq.second;
         openSet.pop_back();
 
-        if (!details[q].closed){
-            details[q].closed = true;
+        if (q.pos == end){
+            return reconstruct_path(q, start, details);
+        }
+        details[q].closed = true;
 
-            for (auto nei : neighbors(q, grid)){
-                // overload details[]
-                struct info_t nq;
-                nq.g = details[q].g + grid[nei.pos.y][nei.pos.x];
-                nq.parent = q;
+        for (auto nei : neighbors(q, grid)){
+            // overload details[]
+            struct info_t nq;
+            nq.g = details[q].g + grid[nei.pos.y][nei.pos.x];
+            nq.f = nq.g + h(nei.pos, end);
+            nq.parent = q;
 
-                if (nq.g < details[nei].g){
-                    details[nei].parent = q;
-                    details[nei].g = nq.g;
-                    openSet.push_back(make_pair(nq.g, nei));
+            if (!details[nei].closed && nq.g < details[nei].g){
+                details[nei].parent = q;
+                details[nei].f = nq.f;
+                details[nei].g = nq.g;
+                auto it = find_if(openSet.begin(), openSet.end(), [nei](auto a){return a.second == nei;});
+                if (it == openSet.end()){
+                    openSet.push_back(make_pair(nq.f, nei));
                     push_heap(openSet.begin(), openSet.end(), heap_comp);
+                }else{
+                    it->first = nq.f;
+                    make_heap(openSet.begin(), openSet.end(), heap_comp);
                 }
             }
         }
     }
 
-    return details.data[end.y][end.x];
+    return reconstruct_path(q, start, details);
 }
 
 void part1(char *input){
@@ -178,13 +208,15 @@ void part1(char *input){
         for (auto c : line)
             grid.back().push_back(c - '0');
     }
+    file.close();
 
-    for (auto s : dijkstra(grid, {0, 0}, {grid.front().size()-1, grid.size()-1})){
-        for (auto c : s)
-            cout << c.g << endl;
+    i64 res = 0;
+    for (auto s : a_star(grid, {0, 0}, {grid.front().size()-1, grid.size()-1})){
+        res += grid[s.y][s.x];
     }
 
-    file.close();
+    cout << "Part1: " << res << endl;
+
 }
 
 int main(int argc, char **argv){
