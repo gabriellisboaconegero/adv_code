@@ -8,14 +8,8 @@ fileName _ = "teste.txt"
 parseInput :: String -> [[Int]]
 parseInput = map (map read . words) . lines
 
-(>?) :: Ord a => (a, a) -> Bool
-(>?) (x, y) = x > y
-
-(<?) :: Ord a => (a, a) -> Bool
-(<?) (x, y) = (>?) (y, x)
-
 isSafe :: [Int] -> Bool
-isSafe xs = (all (safeFunc (<?)) ys) || (all (safeFunc (>?)) ys)
+isSafe xs = (all (safeFunc (uncurry (<))) ys) || (all (safeFunc (uncurry (>))) ys)
     where
         ys = zip xs (tail xs)
         safeFunc :: ((Int, Int) -> Bool) -> (Int, Int) -> Bool
@@ -31,4 +25,4 @@ solve2 :: String -> IO ()
 solve2 = print . length . filter (any isSafe) . map matrizGen . parseInput
 
 main :: IO ()
-main = readFile (fileName 0) >>= solve2
+main = readFile (fileName 0) >>= solve1
